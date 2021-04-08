@@ -8,12 +8,12 @@
 #define WINDOW_WIDTH (640)
 #define WINDOW_HEIGHT (480)
 
-//hastighet pixlar/sekund
+//velocity in pixels/second
 #define SPEED (300)
 
 int main()
 {
-    //initiering av grafik
+    //initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) !=0)
     {
         printf("error initializing SDL: %s\n", SDL_GetError());
@@ -31,7 +31,7 @@ int main()
         return 1;
     }
 
-    //skapa en renderare som ordnar hårdvaran
+    //create renderer
     Uint32 render_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
     SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
     if (!rend)
@@ -42,7 +42,7 @@ int main()
         return 1;
     }
 
-    //ladda in bild i minnet
+    //load image into memory
     SDL_Surface* surface = IMG_Load("resources/hello.png");
     if (!surface)
     {
@@ -53,7 +53,7 @@ int main()
         return 1;
     }
 
-    //Ladda in data i grafikminnet
+    //Load image to texture
     SDL_Texture* tex = SDL_CreateTextureFromSurface(rend, surface);
     SDL_FreeSurface(surface);
     if(!tex)
@@ -65,37 +65,34 @@ int main()
         return 1;
     }
 
-    //struct som styr position och storlek av sprite
+    //rectangle to present the texture on
     SDL_Rect dest;
 
-    //få dimensioner av texturen och ändra dimensioner
+    //shrink image
     SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
     dest.w /= 4;
     dest.h /= 4;
 
-    //lägg sprite i mitten av fönster
-    //koorinaten är högst upp till vänster i rektangeln
+    //put the image in the center of the screen
     float x_pos = (WINDOW_WIDTH - dest.w) /2;
     float y_pos = (WINDOW_HEIGHT - dest.h) /2;
 
-    //ge sprite starthastighet
+    //start velocity
     float x_vel = 0;
     float y_vel = 0;
 
-    //håll reda på inputs
+    //variables that keep track of inputs
     int up = 0;
     int down = 0;
     int left = 0;
     int right = 0;
-
-    //blir 1 när man vill stänga rutan
     int close_requested = 0;
 
 
-    //animationsloop
+    //"game loop"
     while (!close_requested)
     {
-        // hantera events
+        // handle events
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -150,7 +147,7 @@ int main()
             }
         }
 
-        //hantera hastighet
+        //handle velocity
         x_vel = y_vel = 0;
         if (up && !down)
         {
@@ -169,11 +166,11 @@ int main()
             x_vel = SPEED;
         }
 
-        //uppdatera position
+        //update position of image
         x_pos += x_vel / 60;
         y_pos += y_vel /60;
 
-        //hantera kollision
+        //handle collisions with boundaries
         if (x_pos <= 0)
         {
             x_pos = 0;
@@ -196,35 +193,20 @@ int main()
         }
 
 
-        //ange position i struct
+        //set the new position to the image
         dest.y = (int) y_pos;
         dest.x = (int) x_pos;
 
-        //rensa fönster
+        //update window with new position
         SDL_RenderClear(rend);
-
-        //rita bild till fönster
         SDL_RenderCopy(rend, tex, NULL, &dest);
         SDL_RenderPresent(rend);
 
-        //vänta en 60dels sekund
+        //Set framerate to roughly 60fps (can be improved with SDL_GetTicks() for larger game loops)
         SDL_Delay(1000/60);
     }
 
-    //rensa fönster
-    //SDL_RenderClear(rend);
-
-    //rita bild till fönster
-    //SDL_RenderCopy(rend, tex, NULL, NULL);
-    //SDL_RenderPresent(rend);
-
-    //vänta några sek
-    //SDL_Delay(5000);
-
-
-    //printf("initialization successful!\n");
-
-    //städa resurser
+    //let go of resources and close application
     SDL_DestroyTexture(tex);
     SDL_DestroyRenderer(rend);
     SDL_DestroyWindow(win);
