@@ -6,14 +6,14 @@
 
 int main()
 {
-    //initiering av grafik
+    //initiation of SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) !=0)
     {
         printf("error initializing SDL: %s\n", SDL_GetError());
         return 1;
     }
 
-    SDL_Window* win = SDL_CreateWindow("Hello, Jlars!",
+    SDL_Window* win = SDL_CreateWindow("Hello, world!",
                                        SDL_WINDOWPOS_CENTERED,
                                        SDL_WINDOWPOS_CENTERED,
                                        640, 480, 0);
@@ -24,7 +24,7 @@ int main()
         return 1;
     }
 
-    //skapa en renderare som ordnar hårdvaran
+    //create renderer
     Uint32 render_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
     SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
     if (!rend)
@@ -35,7 +35,7 @@ int main()
         return 1;
     }
 
-    //ladda in bild i minnet
+    //load image into memory
     SDL_Surface* surface = IMG_Load("resources/hello.png");
     if (!surface)
     {
@@ -46,7 +46,7 @@ int main()
         return 1;
     }
 
-    //Ladda in data i grafikminnet
+    //Create texture from image
     SDL_Texture* tex = SDL_CreateTextureFromSurface(rend, surface);
     SDL_FreeSurface(surface);
     if(!tex)
@@ -58,20 +58,13 @@ int main()
         return 1;
     }
 
-    //rensa fönster
+    //clear window and then present image for 5 seconds
     SDL_RenderClear(rend);
-
-    //rita bild till fönster
     SDL_RenderCopy(rend, tex, NULL, NULL);
     SDL_RenderPresent(rend);
-
-    //vänta några sek
     SDL_Delay(5000);
 
-
-    //printf("initialization successful!\n");
-
-    //städa resurser
+    //let go of resources
     SDL_DestroyTexture(tex);
     SDL_DestroyRenderer(rend);
     SDL_DestroyWindow(win);
